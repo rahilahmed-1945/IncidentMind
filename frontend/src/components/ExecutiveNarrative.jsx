@@ -16,7 +16,8 @@ export default function ExecutiveNarrative({ narrative, metrics, forecast }) {
       <div className="flex justify-between items-start mb-6">
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
           <BrainCircuit size={20} className="text-purple-400" />
-          AI Executive Narrative
+          Coral Operational Intelligence Briefing
+          <span className="ml-2 px-2 py-0.5 bg-zinc-800 text-zinc-400 text-[9px] rounded font-mono uppercase tracking-widest border border-zinc-700">Correlated via GitHub + Datadog</span>
         </h2>
         
         <motion.div 
@@ -25,7 +26,7 @@ export default function ExecutiveNarrative({ narrative, metrics, forecast }) {
           animate={{ scale: 1, opacity: 1 }}
           className="flex flex-col items-end"
         >
-          <span className="text-[10px] text-zinc-500 uppercase font-mono tracking-widest mb-1">Confidence</span>
+          <span className="text-[10px] text-zinc-500 uppercase font-mono tracking-widest mb-1">Coral Correlation Confidence</span>
           <span className={`text-lg font-bold font-mono px-2 py-0.5 rounded border ${narrative.confidence > 90 ? 'bg-purple-950/50 text-purple-400 border-purple-500/30' : 'bg-yellow-950/50 text-yellow-400 border-yellow-500/30'}`}>
             {narrative.confidence}%
           </span>
@@ -39,7 +40,7 @@ export default function ExecutiveNarrative({ narrative, metrics, forecast }) {
             Deployment Risk
           </div>
           <div className="text-xl font-mono text-red-400">
-            {metrics?.deploymentRisk || 0}%
+            {metrics?.deploymentRisk || 0}% <span className="text-[10px] text-zinc-500 uppercase">Risk Level</span>
           </div>
         </div>
         <div className="bg-zinc-950/50 p-3 rounded-xl border border-zinc-800">
@@ -48,7 +49,7 @@ export default function ExecutiveNarrative({ narrative, metrics, forecast }) {
             Fragility Score
           </div>
           <div className="text-xl font-mono text-yellow-400">
-            {metrics?.fragilityScore || 0}
+            {metrics?.fragilityScore || 0} <span className="text-[10px] text-zinc-500 uppercase">Score</span>
           </div>
         </div>
       </div>
@@ -58,9 +59,9 @@ export default function ExecutiveNarrative({ narrative, metrics, forecast }) {
         <div>
           <h4 className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-2">
             <AlertTriangle size={14} className="text-red-400" />
-            Root Cause Assessment
+            Causality Reconstruction
           </h4>
-          <p className="text-sm text-zinc-300 leading-relaxed border-l-2 border-red-500/50 pl-3">
+          <p className="text-sm text-zinc-200 leading-relaxed border-l-2 border-red-500/50 pl-3">
             {narrative.rootCause}
           </p>
         </div>
@@ -69,7 +70,7 @@ export default function ExecutiveNarrative({ narrative, metrics, forecast }) {
         <div>
           <h4 className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-2">
             <Activity size={14} className="text-cyan-400" />
-            Propagation Chain
+            Infrastructure Propagation
           </h4>
           <div className="text-sm text-cyan-300/80 font-mono bg-cyan-950/20 p-3 rounded-xl border border-cyan-500/20">
             {narrative.propagation}

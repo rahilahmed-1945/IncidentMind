@@ -66,13 +66,49 @@ export default function App() {
     };
   }, [simulatorState, isConnecting]);
 
+  // Cinematic Boot Sequence
+  const [bootPhase, setBootPhase] = useState(0);
+  
+  useEffect(() => {
+    if (isConnecting) {
+      const p1 = setTimeout(() => setBootPhase(1), 800);
+      const p2 = setTimeout(() => setBootPhase(2), 1600);
+      const p3 = setTimeout(() => setBootPhase(3), 2600);
+      const p4 = setTimeout(() => setIsConnecting(false), 3500);
+      return () => { clearTimeout(p1); clearTimeout(p2); clearTimeout(p3); clearTimeout(p4); };
+    }
+  }, [isConnecting]);
+
   if (isConnecting) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-sans">
-        <Loader2 className="animate-spin text-cyan-500 mb-4" size={40} />
-        <p className="text-zinc-400 font-mono text-sm tracking-widest uppercase animate-pulse">
-          Establishing WebSocket Stream to Coral Intelligence...
-        </p>
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-sans relative overflow-hidden bg-ambient-grid">
+        <div className="radar-sweep-bg" />
+        <div className="z-10 bg-zinc-950/80 p-8 rounded-2xl border border-zinc-800 shadow-2xl backdrop-blur-md min-w-[400px]">
+          <div className="flex items-center gap-3 mb-6">
+            <Loader2 className="animate-spin text-cyan-500" size={24} />
+            <span className="text-cyan-400 font-mono tracking-widest uppercase text-sm">IncidentMind Core Boot</span>
+          </div>
+          <div className="space-y-3 font-mono text-xs tracking-wider">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-zinc-500">
+              [SYSTEM] Initializing IncidentMind Core...
+            </motion.div>
+            {bootPhase >= 1 && (
+              <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="text-zinc-400">
+                [NETWORK] Establishing Coral WebSocket... <span className="text-green-400">OK</span>
+              </motion.div>
+            )}
+            {bootPhase >= 2 && (
+              <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="text-cyan-400">
+                [FABRIC] Syncing Multi-Source Connectors (GitHub, Datadog, Slack)... <span className="text-green-400">OK</span>
+              </motion.div>
+            )}
+            {bootPhase >= 3 && (
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-green-400 mt-4 pt-4 border-t border-zinc-800">
+                [STATUS] Operational Intelligence Online
+              </motion.div>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
@@ -93,11 +129,16 @@ export default function App() {
       text-white
       p-6
       font-sans
-      overflow-hidden
       selection:bg-cyan-500/30
+      relative
     ">
+      
+      {/* AMBIENT INTELLIGENCE LAYER */}
+      <div className="absolute inset-0 bg-ambient-grid opacity-50 z-0 pointer-events-none" />
+      <div className="absolute inset-0 radar-sweep-bg opacity-30 z-0 pointer-events-none" />
 
-      {/* HEADER */}
+      <div className="relative z-10 h-full flex flex-col">
+        {/* HEADER */}
 
       <nav className="
         flex
@@ -140,15 +181,19 @@ export default function App() {
 
           </motion.h1>
 
-          <p className="
-            text-zinc-500
-            text-xs
-            font-mono
-            tracking-widest
-            mt-1
-          ">
-            AI ORGANIZATIONAL CAUSALITY ENGINE
-          </p>
+          <div className="flex items-center gap-3 mt-1">
+            <p className="
+              text-zinc-500
+              text-xs
+              font-mono
+              tracking-widest
+            ">
+              AI ORGANIZATIONAL CAUSALITY ENGINE
+            </p>
+            <span className="text-zinc-700">|</span>
+            <span className="text-[9px] font-mono tracking-widest text-cyan-500/70 bg-cyan-950/30 px-2 py-0.5 rounded border border-cyan-900/50">ENV: PRD-US-EAST</span>
+            <span className="text-[9px] font-mono tracking-widest text-green-500/70 bg-green-950/30 px-2 py-0.5 rounded border border-green-900/50">CORAL: ONLINE</span>
+          </div>
 
         </div>
 
@@ -174,7 +219,7 @@ export default function App() {
             "
           >
             <MessageSquare size={16} />
-            Ask IncidentMind
+            Coral Investigative Reasoning Console
           </button>
 
         </div>
@@ -184,22 +229,27 @@ export default function App() {
 
       <div className="
         grid
-        grid-cols-12
-        gap-6
-        h-[calc(100vh-120px)]
+        grid-cols-1
+        lg:grid-cols-12
+        gap-8
+        min-h-[calc(100vh-120px)]
       ">
 
         {/* LEFT PANEL */}
 
-        <div className="
-          col-span-8
+        <motion.div 
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+          className="
+          col-span-1
+          lg:col-span-8
           flex
           flex-col
-          gap-6
-          h-full
+          gap-8
         ">
           
-          <div className="flex gap-6 h-[460px]">
+          <div className="flex gap-6 flex-1 min-h-[500px]">
             {/* DEPENDENCY GRAPH */}
             <div className="
               flex-1
@@ -214,7 +264,7 @@ export default function App() {
             </div>
             
             {/* LIVE FEED */}
-            <div className="w-[300px]">
+            <div className="w-[280px]">
               <LiveFeed events={events} />
             </div>
           </div>
@@ -222,7 +272,8 @@ export default function App() {
           {/* REPLAY ENGINE */}
 
           <div className="
-            h-[120px]
+            h-[160px]
+            shrink-0
             rounded-3xl
             overflow-hidden
           ">
@@ -235,19 +286,20 @@ export default function App() {
             />
           </div>
 
-        </div>
+        </motion.div>
 
         {/* RIGHT SIDEBAR */}
 
-        <div className="
-          col-span-4
+        <motion.div 
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
+          className="
+          col-span-1
+          lg:col-span-4
           flex
           flex-col
-          gap-6
-          h-full
-          overflow-y-auto
-          pr-2
-          custom-scrollbar
+          gap-8
         ">
 
           {/* EXECUTIVE NARRATIVE */}
@@ -285,7 +337,7 @@ export default function App() {
                 className="text-cyan-400"
               />
 
-              Predictive Risk Engine
+              Coral Predictive Intelligence Layer
             </h3>
 
             <div className="space-y-6">
@@ -405,7 +457,7 @@ export default function App() {
             setSimulatorState={setSimulatorState}
           />
 
-        </div>
+        </motion.div>
       </div>
 
       {/* CHAT OVERLAY */}
@@ -414,7 +466,7 @@ export default function App() {
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
       />
-
+      </div>
     </div>
   );
 }

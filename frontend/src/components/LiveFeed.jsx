@@ -1,14 +1,15 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Terminal, Github, Activity, Box, AlertOctagon, Brain, Database } from 'lucide-react';
+import { Terminal, GitBranch, Activity, Box, AlertOctagon, Brain, Database } from 'lucide-react';
 
 const sourceConfig = {
-  GITHUB: { icon: Github, color: 'text-zinc-200', bg: 'bg-zinc-800' },
+  GITHUB: { icon: GitBranch, color: 'text-zinc-200', bg: 'bg-zinc-800' },
   DATADOG: { icon: Activity, color: 'text-purple-400', bg: 'bg-purple-950' },
   KUBERNETES: { icon: Box, color: 'text-blue-400', bg: 'bg-blue-950' },
   PAGERDUTY: { icon: AlertOctagon, color: 'text-green-400', bg: 'bg-green-950' },
   CORAL: { icon: Brain, color: 'text-cyan-400', bg: 'bg-cyan-950' },
   SENTRY: { icon: Database, color: 'text-red-400', bg: 'bg-red-950' },
+  SLACK: { icon: Terminal, color: 'text-blue-400', bg: 'bg-blue-950' },
   DEFAULT: { icon: Terminal, color: 'text-zinc-400', bg: 'bg-zinc-900' }
 };
 

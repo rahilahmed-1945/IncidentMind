@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import {
   ReactFlow,
@@ -7,6 +7,8 @@ import {
   Handle,
   Position,
   MarkerType,
+  useNodesState,
+  useEdgesState
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
@@ -44,31 +46,34 @@ const CustomNode = ({ data, isConnectable }) => {
   let glow = '';
 
   if (isHighImpact) {
-    bgClass = 'bg-red-950 border-red-500 shadow-[0_0_40px_rgba(239,68,68,0.6)]';
+    bgClass = 'bg-red-950/80 border-red-500 shadow-[0_0_60px_rgba(239,68,68,0.8)]';
     textClass = 'text-red-400';
   } else if (isMediumImpact || isFailing) {
-    bgClass = 'bg-yellow-950 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.4)]';
+    bgClass = 'bg-yellow-950/80 border-yellow-500 shadow-[0_0_30px_rgba(234,179,8,0.5)]';
     textClass = 'text-yellow-400';
   } else if (isDegraded) {
-    bgClass = 'bg-yellow-950/50 border-yellow-500/50';
+    bgClass = 'bg-yellow-950/40 border-yellow-500/50';
     textClass = 'text-yellow-400/80';
+  } else {
+    // Healthy specific calming glow
+    bgClass = 'bg-zinc-900/90 border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.15)]';
   }
 
   return (
     <motion.div
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ type: 'spring' }}
+      initial={{ scale: 0.5, opacity: 0, y: 20 }}
+      animate={{ scale: 1, opacity: 1, y: 0 }}
+      transition={{ type: 'spring', damping: 12, stiffness: 100, mass: 0.5 }}
       className={`
-        px-4 py-3
-        rounded-xl
+        px-6 py-5
+        rounded-2xl
         border-2
         ${bgClass}
         ${isHighImpact ? 'animate-pulse' : ''}
-        flex items-center gap-3
-        backdrop-blur-md
+        flex items-center gap-4
+        backdrop-blur-xl
         relative
-        min-w-[220px]
+        min-w-[280px]
       `}
     >
 
@@ -85,21 +90,26 @@ const CustomNode = ({ data, isConnectable }) => {
       />
 
       <div className={textClass}>
-        {iconMap[data.iconName] || data.icon}
+        {/* Scale up the icon */}
+        {React.cloneElement(iconMap[data.iconName] || data.icon, { size: 28 })}
       </div>
 
-      <div>
+      <div className="flex flex-col gap-1">
 
         <div className="
           font-bold
-          text-gray-200
-          text-sm
+          text-gray-100
+          text-lg
+          tracking-wide
         ">
           {data.label}
         </div>
 
         <div className={`
-          text-xs
+          text-sm
+          font-mono
+          font-semibold
+          tracking-wider
           ${textClass}
         `}>
           {data.subLabel}
@@ -133,54 +143,99 @@ export default function DependencyGraph({
   edges: initialEdges
 }) {
 
-  const nodes = useMemo(() => {
-    if (!initialNodes) return [];
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const hasInitialized = useRef(false);
 
-    if (simulatorState === 'healed') {
-      return initialNodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          state: 'healthy',
-          subLabel:
-            node.data.subLabel.includes('Latency')
-              ? 'Latency: 10ms'
-              : 'Connections: OK',
-        },
-      }));
-    }
+  useEffect(() => {
+    if (!initialNodes) return;
 
-    return initialNodes;
+    setNodes((nds) => {
+      // If empty, initialize
+      if (nds.length === 0) {
+        return initialNodes.map(node => {
+          if (simulatorState === 'healed') {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                state: 'healthy',
+                subLabel: node.data.subLabel.includes('Latency') ? 'Latency: 10ms' : 'Connections: OK',
+              }
+            };
+          }
+          return node;
+        });
+      }
 
-  }, [simulatorState, initialNodes]);
+      // Otherwise, only update data to preserve position and references
+      return nds.map((n) => {
+        const incomingNode = initialNodes.find((inNode) => inNode.id === n.id);
+        if (!incomingNode) return n;
 
-  const edges = useMemo(() => {
-    if (!initialEdges) return [];
+        let newData = { ...incomingNode.data };
+        if (simulatorState === 'healed') {
+          newData.state = 'healthy';
+          newData.subLabel = newData.subLabel.includes('Latency') ? 'Latency: 10ms' : 'Connections: OK';
+        }
 
-    if (simulatorState === 'healed') {
-      return initialEdges.map((edge) => ({
-        ...edge,
-        style: {
-          stroke: '#06b6d4',
-          strokeWidth: 2,
-        },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          color: '#06b6d4',
-        },
-      }));
-    }
+        if (JSON.stringify(n.data) !== JSON.stringify(newData)) {
+          return { ...n, data: newData };
+        }
+        return n;
+      });
+    });
+  }, [initialNodes, simulatorState, setNodes]);
 
-    return initialEdges;
+  useEffect(() => {
+    if (!initialEdges) return;
 
-  }, [simulatorState, initialEdges]);
+    setEdges((eds) => {
+      if (eds.length === 0) {
+        return initialEdges.map(edge => {
+          if (simulatorState === 'healed') {
+            return {
+              ...edge,
+              className: 'animated-data-packet',
+              style: { stroke: '#06b6d4', strokeWidth: 2 },
+              markerEnd: { type: MarkerType.ArrowClosed, color: '#06b6d4' },
+            };
+          }
+          return {
+            ...edge,
+            className: edge.style?.stroke === '#ef4444' ? '' : 'animated-data-packet'
+          };
+        });
+      }
+
+      return eds.map((e) => {
+        const incomingEdge = initialEdges.find((inEdge) => inEdge.id === e.id);
+        if (!incomingEdge) return e;
+
+        let newEdge = { ...incomingEdge };
+        if (simulatorState === 'healed') {
+          newEdge.className = 'animated-data-packet';
+          newEdge.style = { stroke: '#06b6d4', strokeWidth: 2 };
+          newEdge.markerEnd = { type: MarkerType.ArrowClosed, color: '#06b6d4' };
+        } else {
+          newEdge.className = newEdge.style?.stroke === '#ef4444' ? '' : 'animated-data-packet';
+        }
+
+        if (JSON.stringify(e.style) !== JSON.stringify(newEdge.style) || e.className !== newEdge.className) {
+          return { ...e, ...newEdge };
+        }
+        return e;
+      });
+    });
+  }, [initialEdges, simulatorState, setEdges]);
 
   return (
 
     <div
       style={{
         width: '100%',
-        height: '700px',
+        height: '100%',
+        minHeight: '600px',
       }}
 
       className="
@@ -229,7 +284,7 @@ export default function DependencyGraph({
           tracking-widest
           uppercase
         ">
-          Live Telemetry
+          Coral Operational Telemetry
         </span>
 
       </div>
@@ -245,8 +300,22 @@ export default function DependencyGraph({
         <ReactFlow
           nodes={nodes}
           edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
-          fitView
+          onInit={(instance) => {
+            if (!hasInitialized.current) {
+              instance.fitView({ padding: 0.2 });
+              hasInitialized.current = true;
+            }
+          }}
+          nodesFocusable={false}
+          edgesFocusable={false}
+          elementsSelectable={false}
+          nodesDraggable={false}
+          preventScrolling={true}
+          autoPanOnConnect={false}
+          autoPanOnNodeDrag={false}
           proOptions={{
             hideAttribution: true,
           }}
