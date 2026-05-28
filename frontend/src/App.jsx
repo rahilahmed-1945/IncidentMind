@@ -33,7 +33,7 @@ export default function App() {
 
   // Fetch History on Mount
   useEffect(() => {
-    axios.get("http://localhost:3000/history").then(res => {
+    axios.get("https://incidentmind-production.up.railway.app/history").then(res => {
       setHistoricalSnapshots(res.data);
     }).catch(err => console.error("Failed to fetch history", err));
   }, []);
@@ -42,7 +42,7 @@ export default function App() {
   useEffect(() => {
     let isMounted = true;
     
-    const socket = io("http://localhost:3000");
+    const socket = io("wss://incidentmind-production.up.railway.app");
 
     socket.on("connect", () => {
       console.log("Connected to Coral Intelligence Stream");

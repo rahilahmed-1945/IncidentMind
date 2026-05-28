@@ -63,7 +63,7 @@ app.get("/history", (req, res) => {
   res.json(getHistoricalSnapshots(githubContext));
 });
 
-app.post("/analyze", async (req, res) => {
+app.post("/api/analyze", async (req, res) => {
   const userQuery = req.body.query || "What caused the checkout failure?";
   
   try {
@@ -398,6 +398,7 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(3000, () => {
-  console.log("IncidentMind server running on port 3000 (HTTP & WebSockets)");
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`IncidentMind server running on port ${PORT} (HTTP & WebSockets)`);
 });

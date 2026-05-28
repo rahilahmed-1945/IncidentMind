@@ -48,7 +48,7 @@ export default function AskIncidentMind({ isOpen, onClose }) {
       // Delay actual response to allow animation to complete
       setTimeout(async () => {
         try {
-          const response = await axios.post("http://localhost:3000/analyze", { query });
+          const response = await axios.post("https://incidentmind-production.up.railway.app/api/analyze", { query });
           const responseMsg = {
             role: 'assistant',
             sql: response.data.sql,
