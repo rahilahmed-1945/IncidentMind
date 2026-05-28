@@ -12,10 +12,7 @@ const io = new Server(server, {
   cors: { origin: "*" }
 });
 
-app.use(cors({
-  origin: ["http://localhost:5173", "https://incidentmind-production.up.railway.app"],
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 
 const getHistoricalSnapshots = require('./historyData');
